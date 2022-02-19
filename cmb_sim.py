@@ -1,8 +1,10 @@
 #!/usr/bin/python3
 
 import numpy as np
+import multiprocessing as mp
 from scipy.special import zeta
 
+workers = 3
 k = 1
 c = 1
 G = 0.0001
@@ -20,6 +22,10 @@ photon_mass = hydrogen_mass - proton_mass - electron_mass
 photon_energy = np.abs(proton_mass + electron_mass - hydrogen_mass) * c ** 2
 interaction_rate = 0.5
 interaction_radius = 0.1
+
+
+def vel_add(v1, v2):
+    return (v1 + v2) / (1 + (v1 * v2 / c ** 2))
 
 
 def dist(p1, p2):
@@ -147,9 +153,96 @@ def get_cmb(u):
     return np.array([x, y, z])
 
 
+class MultiprocessHelper:
+    def __init__(self, var, caller):
+        self.var = var
+        self.caller = caller
+
+    def make_caller(self):
+        return self.caller(self.var)
+
+
+class Evolver:
+    """
+    Evolve particle in time due to the forces on it.
+    """
+    def __init__(self, time):
+        self.time = time
+
+    def __call__(self, particle):
+        particle.evolve(self.time)
+        particle.G = np.zeros((3))
+        particle.E = np.zeros((3))
+
+
+class Graviter:
+    """
+    Determine gravitational field at site of particle.
+    """
+    def __init__(self, var):
+        pass
+
+    def __call__(self, particles):
+        p1, p2 = particles[0], particles[1]
+        if p1 is not p2:
+            G0 = -G * p2.m * (p1.x - p2.x) / dist(p1, p2) ** 3
+            p1.G += G0
+
+
+class Electricer:
+    """
+    Determine electric field at site of particle.
+    """
+    def __init__(self, var):
+        pass
+
+    def __call__(self, particles):
+        p1, p2 = particles[0], particles[1]
+        if p1 is not p2:
+            E0 = 1 / (4 * np.pi * electric_constant) * \
+                p2.q * (p1.x - p2.x) / dist(p1, p2) ** 3
+            p1.E += E0
+
+
+class Interacter:
+    def __init__(self, var):
+        pass
+
+    def __call__(self, particles):
+        p1, p2 = particles[0], particles[1]
+        if p1 is not p2:
+            p1.universe.thomson(p1, p2)
+            if np.random.random() <= interaction_rate and dist(p1, p2) <= interaction_radius:
+                p1.universe.ionization(p1, p2)
+                p1.universe.recombination(p1, p2)
+
+
+class Measurer:
+    def __init__(self, var):
+        pass
+
+    def __call__(self, particles):
+        p1, p2 = particles[0], particles[1]
+        return (p1, p2, dist(p1, p2))
+
+
 class Universe:
-    def __init__(self, size=1):
+    def __init__(
+            self,
+            size=1,
+            workers=1,
+            mpG=True,
+            mpE=True,
+            mpEvolve=True,
+            mpInteract=True,
+            mpMeasure=True):
         self.size = size
+        self.workers = workers
+        self.mpG = mpG
+        self.mpE = mpE
+        self.mpEvolve = mpEvolve
+        self.mpInteract = mpInteract
+        self.mpMeasure = mpMeasure
         self.particles = []
         self.T = None
         self.next_size = self.size
@@ -162,47 +255,73 @@ class Universe:
             s += '\n\n' + str(particle)
         return s
 
+    def interface_func(self, f, x):
+        pool = mp.Pool(self.workers)
+        return list(pool.map(f, x))
+
     def evolve(self, time):
         self.stage_E()
         self.stage_G()
-        for p in self.particles:
-            p.evolve(time)
-            p.G = np.zeros((3))
-            p.E = np.zeros((3))
+        if self.mpEvolve:
+            evolver = MultiprocessHelper(time, Evolver).make_caller()
+            self.interface_func(evolver, self.particles)
+        else:
+            for p in self.particles:
+                p.evolve(time)
+                p.G = np.zeros((3))
+                p.E = np.zeros((3))
         self.stage_proton_prob()
         self.stage_interactions()
         for p in self.particles:
             p.interacted = False
-            p.v = truncate_velocity(p.v)
             p.x = self.next_size / self.size * p.x
         self.size = self.next_size
 
     def stage_interactions(self):
-        ps = []
-        for i in range(len(self.particles)):
-            for j in range(len(self.particles)):
-                d = dist(self.particles[i], self.particles[j])
-                ps.append((self.particles[i], self.particles[j], d))
+        if self.mpMeasure:
+            p_table = []
+            for p1 in self.particles:
+                for p2 in self.particles:
+                    p_table.append((p1, p2))
+            measurer = MultiprocessHelper(1, Measurer).make_caller()
+            ps = self.interface_func(measurer, p_table)
+        else:
+            ps = []
+            for i in range(len(self.particles)):
+                for j in range(len(self.particles)):
+                    d = dist(self.particles[i], self.particles[j])
+                    ps.append((self.particles[i], self.particles[j], d))
         ps.sort(key=lambda t: t[2])
-        for pair in ps:
-            if pair[0] is not pair[1]:
-                self.thomson(pair[0], pair[1])
-                if np.random.random() <= interaction_rate and dist(
-                        pair[0], pair[1]) <= interaction_radius:
-                    self.ionization(pair[0], pair[1])
-                    self.recombination(pair[0], pair[1])
+        if self.mpInteract:
+            interacter = MultiprocessHelper(1, Interacter).make_caller()
+            self.interface_func(interacter, ps)
+        else:
+            for pair in ps:
+                if pair[0] is not pair[1]:
+                    self.thomson(pair[0], pair[1])
+                    if np.random.random() <= interaction_rate and dist(
+                            pair[0], pair[1]) <= interaction_radius:
+                        self.ionization(pair[0], pair[1])
+                        self.recombination(pair[0], pair[1])
 
     def stage_E(self):
         """
         Stage the values of the electric field for each particle.
         """
-        for p1 in self.particles:
-            for p2 in self.particles:
-                if p1 is not p2:
-                    # print(dist(p1, p2))
-                    E0 = 1 / (4 * np.pi * electric_constant) * \
-                        p2.q * (p1.x - p2.x) / dist(p1, p2) ** 3
-                    p1.E += E0
+        if self.mpE:
+            p_table = []
+            for p1 in self.particles:
+                for p2 in self.particles:
+                    p_table.append((p1, p2))
+            electricer = MultiprocessHelper(1, Electricer).make_caller()
+            self.interface_func(electricer, p_table)
+        else:
+            for p1 in self.particles:
+                for p2 in self.particles:
+                    if p1 is not p2:
+                        E0 = 1 / (4 * np.pi * electric_constant) * \
+                            p2.q * (p1.x - p2.x) / dist(p1, p2) ** 3
+                        p1.E += E0
 
     def stage_B(self):
         """
@@ -215,11 +334,19 @@ class Universe:
         """
         Stage the values of the gravitational field for each particle.
         """
-        for p1 in self.particles:
-            for p2 in self.particles:
-                if p1 is not p2:
-                    G0 = -G * p2.m * (p1.x - p2.x) / dist(p1, p2) ** 3
-                    p1.G += G0
+        if self.mpG:
+            p_table = []
+            for p1 in self.particles:
+                for p2 in self.particles:
+                    p_table.append((p1, p2))
+            graviter = MultiprocessHelper(1, Graviter).make_caller()
+            self.interface_func(graviter, p_table)
+        else:
+            for p1 in self.particles:
+                for p2 in self.particles:
+                    if p1 is not p2:
+                        G0 = -G * p2.m * (p1.x - p2.x) / dist(p1, p2) ** 3
+                        p1.G += G0
 
     def stage_T(self):
         """
@@ -384,7 +511,7 @@ class Particle:
         self.E = np.zeros((3))
         self.B = np.zeros((3))
         self.G = np.zeros((3))
-        self.f = 0
+        self.f = np.zeros((3))
         self.interacted = False
         if universe is None:
             universe = Universe()
@@ -413,8 +540,8 @@ class Particle:
         self.f = f
         if self.m != 0:
             a = f / self.m
-            self.v += a * time
-            self.v = truncate_velocity(self.v)
+            self.v = vel_add(self.v, a * time)
+            # self.v = truncate_velocity(self.v)
         self.x += self.v * time
         self.x %= self.universe.size
 
