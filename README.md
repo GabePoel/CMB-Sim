@@ -65,7 +65,7 @@ As the universe shrinks, it universe becomes hot and highly ionized. We can even
 
 ![Universe Composition](Figures/Slow%20Logarithmic%20Ionization.png)
 
-## Universe Opacity
+### Universe Opacity
 
 Once the universe gets especially small, it is already highly ionization and is sufficiently saturated to prevent further events. However, this has resulted in a large number of free electrons for the tightly packed photons to scatter off of. We can see the high rate at which photons are scattering reflected in the number of Thomson scattering events that occur. Note that the spike at the final time step is spurious since that’s when the universe collapses down to a single point.
 
