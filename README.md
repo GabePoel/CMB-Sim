@@ -6,7 +6,7 @@ Generate early universe models and simulate the evolution of their content. Then
 
 ## Pre-Run Simulations
 
-The evolution of several different types of universes are already generated! [The data sets](Data Sets) and [figures with additional information](Figures) are available in this repository. But, I encourage you to watch the videos below:
+The evolution of several different types of universes are already generated! [The data sets](Data%20Sets) and [figures with additional information](Figures) are available in this repository. But, I encourage you to watch the videos below:
 
 | Universe                                                     | Number of Particles | Number of Time Steps |
 | ------------------------------------------------------------ | ------------------- | -------------------- |
