@@ -55,7 +55,7 @@ CMB Sim saves the complete state of each simulated universe during each time ste
 
 This universe is one that begins quite large and then undergoes a slow logarithmic shrinking. This may not be an especially “physical” universe. However, it is a helpful toy model of what happens to a universe as it slowly compresses down.
 
-![Slow Logarithmic Size - Linear](Figures/Slow Logarithmic Size - Linear.png)
+![Slow Logarithmic Size - Linear](Figures/Slow%20Logarithmic%20Size%20-%20Linear.png)
 
 ### Universe Composition
 
@@ -69,7 +69,7 @@ As the universe shrinks, it universe becomes hot and highly ionized. We can even
 
 Once the universe gets especially small, it is already highly ionization and is sufficiently saturated to prevent further events. However, this has resulted in a large number of free electrons for the tightly packed photons to scatter off of. We can see the high rate at which photons are scattering reflected in the number of Thomson scattering events that occur. Note that the spike at the final time step is spurious since that’s when the universe collapses down to a single point.
 
-![Slow Logarithmic Thomson](Figures/Slow Logarithmic Thomson.png)
+![Slow Logarithmic Thomson](Figures/Slow%20Logarithmic%20Thomson.png)
 
  In the late stages of this universe, very few photons remained. So, at these small size scales, we can see that nearly every photon scattered during each time step! Hence, we can clearly see the regime where this universe has become opaque.
 
