@@ -1,6 +1,6 @@
 # CMB Sim
 
-Generate early universe models and simulate the evolution of their content. Then, generate the background radiation for each universe you make!
+Create early universe models and see how they evolve! Then, render maps of the background radiation for each universe you make!
 
 ![Oscillating Universe](Figures/Periodic.gif)
 
