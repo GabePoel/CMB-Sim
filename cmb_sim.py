@@ -108,16 +108,21 @@ def redshift(particle, last_universe, time_step):
     a_old = last_universe.size
     x = particle.x - np.ones((3)) * a / 2
     v = (a - a_old) * x / time_step + a * v0
+    v = v / np.sqrt(np.sum(v ** 2))
     [vx, vy, vz] = list(v)
     vtheta = np.arctan(np.sqrt(vx ** 2 + vy ** 2) / vz)
+    if np.isnan(vtheta):
+        vtheta = np.pi / 2
     vphi = np.arctan(vy / vx)
+    if np.isnan(vphi):
+        vphi = np.pi / 2
     rhat = np.array([np.sin(vtheta) * np.cos(vtheta),
                      np.sin(vtheta) * np.sin(vtheta),
                      np.cos(vtheta)])
     v_rad = np.dot(v, rhat)
-    v_trn = np.sqrt(np.sqrt(np.sum(v ** 2)) - v_rad ** 2)
-    z_rad = np.sqrt((1 + v_rad / 1) / (1 - v_rad / 1)) - 1
-    z_trn = 1 / np.sqrt(1 - v_trn ** 2 / 1) - 1
+    v_trn = np.sqrt(np.sqrt(np.sum(v ** 2) - v_rad ** 2))
+    z_rad = np.sqrt((1 + v_rad) / (1 - v_rad)) - 1
+    z_trn = 1 / np.sqrt(1 - v_trn ** 2) - 1
     return np.sqrt(z_rad ** 2 + z_trn ** 2) + 1
 
 
@@ -751,6 +756,8 @@ class Universe:
                 p.E = np.zeros((3))
         self.stage_proton_prob()
         self.stage_interactions()
+        if self.next_size == 0:
+            self.next_size = 0.0001
         for p in self.particles:
             p.interacted = False
             p.x = self.next_size / self.size * p.x

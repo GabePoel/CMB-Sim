@@ -75,11 +75,11 @@ def draw_universe(u, alpha=1, name=None, step=0, nofig=False, ax=None):
                 json.dump(u.to_json(), f)
                 
 u = Universe(0.0001, 8, mpG=False, mpEvolve=True, mpE=False, mpMeasure=False, mpInteract=False)
-u.add_electrons(500)
-u.add_protons(500)
+u.add_electrons(50)
+u.add_protons(50)
 
 
-steps = 300
+steps = 5000
 time_step = 0.001
 photon_count = []
 electron_count = []
@@ -101,9 +101,9 @@ for i in tqdm(range(steps)):
     d.append(dist(u.particles[0], u.particles[1]))
     vx.append(np.sqrt(np.sum(u.particles[0].v) ** 2))
     fx.append(u.particles[0].f[0])
-    u.next_size = np.log(time_step + 1)
+    u.next_size = np.log(time_step * (i + 1))
     u.evolve(time_step)
-    draw_universe(u, name='Logarithmic 1', step=i, nofig=True)
+    draw_universe(u, name='Long Logarithmic Data', step=i, nofig=True)
 photon_count = np.array(photon_count)
 electron_count = np.array(electron_count)
 proton_count = np.array(proton_count)
@@ -117,4 +117,4 @@ plt.fill_between(t, photon_count + hydrogen_count, photon_count + hydrogen_count
 plt.fill_between(t, photon_count, photon_count + hydrogen_count, label='Hydrogen', color='r')
 plt.fill_between(t, base, photon_count, label='Photons', color='purple')
 plt.legend()
-plt.savefig('Logarithmic Out.png', dpi=300)
+plt.savefig('Long Logarithmic Out.png', dpi=300)
