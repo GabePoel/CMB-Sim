@@ -4,6 +4,10 @@ Create early universe models and see how they evolve! Then, render maps of the b
 
 ![Oscillating Universe](Figures/Periodic.gif)
 
+## What is CMB Sim?
+
+CMB Sim is program for simulating the evolution of the universe shortly after the big bang. It lets you create universes of different sizes and matter/photon compositions, then change the sizes of those universes and evolve them in time. Finally, CMB Sim creates a visualization of the cosmic microwave background that results from the dynamics in your universes. But, not only does it produce a final snapshot of your universes’ background radiation, it determines what it looks like at each point in time as well! This means you can see your universe rapidly evolve and witness the moment when photons and baryonic matter decouple! It also allows for the witnessing of recombination/ionization rates and see the effects of Thomson scattering on photon mobility live.
+
 ## Pre-Run Simulations
 
 The evolution of several different types of universes are already generated! [The data sets](Data%20Sets) and [figures with additional information](Figures) are available in this repository. But, I encourage you to watch the videos in the table below.
@@ -12,13 +16,15 @@ The evolution of several different types of universes are already generated! [Th
 | ------------------------------------------------------------ | ------------------- | -------------------- |
 | [Slow logarithmically shrinking universe](https://youtu.be/zcKA7e664Zw) | 100                 | 1000                 |
 | [Slow exponentially growing universe](https://youtu.be/HDdtpSWe0bA) | 1000                | 1000                 |
-| [Logarithmically shrinking then growing universe](https://youtu.be/L5UMsxqhVtE) | 100                 | 5000                 |
-| [Exponentially growing universe](https://youtu.be/IZ74dyzGOCs) | 100                 | 1000                 |
-| [Oscillating universe](https://youtu.be/dCtzyYYSN6Y)         | 1000                | 300                  |
+| [Logarithmically shrinking then growing universe](https://youtu.be/L5UMsxqhVtE)* | 100                 | 5000                 |
+| [Exponentially growing universe](https://youtu.be/IZ74dyzGOCs)* | 100                 | 1000                 |
+| [Oscillating universe](https://youtu.be/dCtzyYYSN6Y)*        | 1000                | 300                  |
 | [Tiny static universe](https://www.youtube.com/watch?v=_x_g3oanCP8) | 1000                | 300                  |
 | [Slightly larger static universe](https://youtu.be/FiM_chzzZQg) | 1000                | 100                  |
 
 The additional figures provide the composition of each universe, size, number of Thomson scattering events, number of recombination events, and number of ionization events as a function of time. An example set of these are displayed for the slow logarithmically shrinking universe down below.
+
+*These universes are especially worth watching. In the videos for the growing universes, you can see the evolution of the background radiation slow down and see decoupling happen live. For the oscillating universe, you can then also see the dynamics of the universe pick back up again.
 
 ## How CMB-Sim Works
 
